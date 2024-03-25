@@ -5,7 +5,9 @@
 
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharacteristic = NULL;
-uint8_t value = 0;
+int value = 0;
+String msg="";
+String Sval ="";
 
 class MyServerCallbacks : public BLEServerCallbacks {
     void onConnect(BLEServer* pServer) {
@@ -35,7 +37,13 @@ void setup() {
                        BLECharacteristic::PROPERTY_NOTIFY
                      );
 
-    pCharacteristic->setValue(&value, 1);
+    msg= "msg from S1: init" ;
+    const char* charArray = msg.c_str();
+    uint8_t* byteArray = (uint8_t*)charArray;
+    size_t BAlength = strlen((const char*)byteArray);
+
+
+    pCharacteristic->setValue(byteArray, BAlength);
 
     pService->start();
 
@@ -44,8 +52,16 @@ void setup() {
 }
 
 void loop() {
-    delay(5000);
-    value++; // Incrementing value every 5 seconds
-    pCharacteristic->setValue(&value, 1);
+    value++; 
+    Sval = std::to_string(value).c_str();
+    msg= "msg from S1:" + Sval;
+    const char* charArray = msg.c_str();
+    uint8_t* byteArray = (uint8_t*)charArray;
+    size_t BAlength = strlen((const char*)byteArray);
+
+
+    pCharacteristic->setValue(byteArray, BAlength);
     pCharacteristic->notify();
+    
+    delay(2000);
 }
