@@ -37,7 +37,7 @@ void setup() {
                        BLECharacteristic::PROPERTY_NOTIFY
                      );
 
-    msg= "msg from S1: init" ;
+    msg= "msg from S2: init" ;
     const char* charArray = msg.c_str();
     uint8_t* byteArray = (uint8_t*)charArray;
     size_t BAlength = strlen((const char*)byteArray);
@@ -54,14 +54,18 @@ void setup() {
 void loop() {
     value++; 
     Sval = std::to_string(value).c_str();
-    msg= "msg from S1:" + Sval;
+    msg= "msg from S2:" + Sval;
     const char* charArray = msg.c_str();
     uint8_t* byteArray = (uint8_t*)charArray;
     size_t BAlength = strlen((const char*)byteArray);
 
 
     pCharacteristic->setValue(byteArray, BAlength);
+
     pCharacteristic->notify();
+    Serial.print("Data Updated :");
+    Serial.println(Sval);
+
     
-    delay(2000);
+    delay(5000);
 }
