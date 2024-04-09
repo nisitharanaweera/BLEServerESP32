@@ -3,23 +3,40 @@
 #include <BLEUtils.h>
 #include <BLEServer.h>
 
-BLEServer* pServer = NULL;
-BLECharacteristic* pCharacteristic = NULL;
-int value = 0;
-String msg="";
-String Sval ="";
+const String DeviceDisplayName = "ESPServer2";
+BLEUUID serviceUUID("43721262-a0cd-433c-a1bc-36caba2b4c59"); // service UUID
+BLEUUID charUUID("beb5483e-36e1-4688-b7f5-ea07361b26a8");    // characteristic UUID
 
-class MyServerCallbacks : public BLEServerCallbacks {
-    void onConnect(BLEServer* pServer) {
+
+
+BLEServer *pServer = NULL;
+BLECharacteristic *pCharacteristic = NULL;
+int value = 0;
+String msg = "";
+String Sval = "";
+
+
+void BLEServerInit();
+
+class MyServerCallbacks : public BLEServerCallbacks
+{
+    void onConnect(BLEServer *pServer)
+    {
         Serial.println("Connected to client");
     }
 
-    void onDisconnect(BLEServer* pServer) {
+    void onDisconnect(BLEServer *pServer)
+    {
         Serial.println("Disconnected from client");
+        //Restart Advertising the service
+        BLEAdvertising *pAdvertising = pServer->getAdvertising();
+        pAdvertising->start();
     }
 };
 
-void setup() {
+
+void setup()
+{
     Serial.begin(115200);
     Serial.println("Starting BLE Server...");
 
@@ -28,20 +45,18 @@ void setup() {
     pServer = BLEDevice::createServer();
     pServer->setCallbacks(new MyServerCallbacks());
 
-    BLEService *pService = pServer->createService(BLEUUID("43721262-a0cd-433c-a1bc-36caba2b4c59")); // UUID for the service
+    BLEService *pService = pServer->createService(serviceUUID);
 
     pCharacteristic = pService->createCharacteristic(
-                       BLEUUID("beb5483e-36e1-4688-b7f5-ea07361b26a8"), // UUID for the characteristic
-                       BLECharacteristic::PROPERTY_READ |
-                       BLECharacteristic::PROPERTY_WRITE |
-                       BLECharacteristic::PROPERTY_NOTIFY
-                     );
+        charUUID,
+        BLECharacteristic::PROPERTY_READ |
+            BLECharacteristic::PROPERTY_WRITE |
+            BLECharacteristic::PROPERTY_NOTIFY);
 
-    msg= "msg from S2: init" ;
-    const char* charArray = msg.c_str();
-    uint8_t* byteArray = (uint8_t*)charArray;
-    size_t BAlength = strlen((const char*)byteArray);
-
+    msg = "msg from S2: init";
+    const char *charArray = msg.c_str();
+    uint8_t *byteArray = (uint8_t *)charArray;
+    size_t BAlength = strlen((const char *)byteArray);
 
     pCharacteristic->setValue(byteArray, BAlength);
 
@@ -51,14 +66,14 @@ void setup() {
     pAdvertising->start();
 }
 
-void loop() {
-    value++; 
+void loop()
+{
+    value++;
     Sval = std::to_string(value).c_str();
-    msg= "msg from S2:" + Sval;
-    const char* charArray = msg.c_str();
-    uint8_t* byteArray = (uint8_t*)charArray;
-    size_t BAlength = strlen((const char*)byteArray);
-
+    msg = "msg from S2:" + Sval;
+    const char *charArray = msg.c_str();
+    uint8_t *byteArray = (uint8_t *)charArray;
+    size_t BAlength = strlen((const char *)byteArray);
 
     pCharacteristic->setValue(byteArray, BAlength);
 
@@ -66,6 +81,5 @@ void loop() {
     Serial.print("Data Updated :");
     Serial.println(Sval);
 
-    
-    delay(5000);
+    delay(2000);
 }
